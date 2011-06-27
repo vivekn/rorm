@@ -1,7 +1,7 @@
 from redis_wrap import *
 
 class Field(object):
-    def __init__(self, data_type)
+    def __init__(self, data_type):
         self.data_type = data_type
 
 class Meta(type):
@@ -20,13 +20,10 @@ class Meta(type):
                     cls._hashes.append(k)
 
 class Model(object):
-
     def __init__(self, prefix):
-        self.prefix = prefix
+        self.prefix = '%s.%s' % (self.__class__.__name__, prefix)
 
     def __getattr__(self, key):
-        if (hasattr(self, key)):
-            super(Model, self).__getattr__(key) 
         _key = "%s.%s" % (self.prefix, key)
         if key in self._sets:
             return get_set(_key)
@@ -34,17 +31,15 @@ class Model(object):
             return get_list(_key)
         elif key in self._hashes:
             return get_hash(_key)
-        return key
+        return _key
 
     def get(self, key):
-        _key = "%s.%s" % (self.prefix, key)
+        key = "%s.%s" % (self.prefix, key)
         return get_redis.get(_key)
 
     def rel(self, key):
         return self.__getattr__(key)
 
+    __metaclass__ = Meta
 
 
-
-
-                                    
